@@ -38,26 +38,27 @@ iPhone OS 2 做了很大的整理，UITableView就随之而来了，成为了每
 # API的缺陷
 UITableVIew非常的古老，大部分的设计和实现都在blocks和自动布局这些特性出现之前。这表明。这是你在UITableView中如何更新一个section：
 
-{% codeblock lang:swift %}
+```swift
 tableView.beginUpdates()
 tableView.reloadSections(IndexSet(integer: sectionIndex), with: UITableViewRowAnimation.none)
 tableView.endUpdates()
-{% endcodeblock %}
-
+```
 
 同样在UICollectionView
-{% codeblock lang:swift %}
+
+```swift
 collectionView.performBatchUpdates({
     collectionView.reloadSections(IndexSet(integer: sectionIndex))
 }, completion: nil)
-{% endcodeblock %}
+```
 
 这看起来可能不太像，但是很容易被 beginUpdates和endUpdates这样的配对写法搞昏，然后这不可能出现在UICollectionView的API里。因为这个类实在是很老了，它有很多弃用的方法还要继续支持。在Swift的范围里已经看不到很多弃用很久的API，但是当你切换到Objctive-C时，还是能看到Cell的所用扩展方法：
 
-{% codeblock lang:swift %}
+```objective-c
 @interface UITableViewCell (UIDeprecated)
 
 // Frame is ignored.  The size will be specified by the table view width and row height.
+
 - (id)initWithFrame:(CGRect)frame reuseIdentifier:(nullable NSString *)reuseIdentifier NS_DEPRECATED_IOS(2_0, 3_0) __TVOS_PROHIBITED;
 
 // Content properties.  These properties were deprecated in iPhone OS 3.0.  The textLabel and imageView properties above should be used instead.
@@ -81,7 +82,10 @@ collectionView.performBatchUpdates({
 @property (nonatomic, nullable) SEL               accessoryAction NS_DEPRECATED_IOS(2_0, 3_0) __TVOS_PROHIBITED;             // action to call on accessory view clicked. set by UITableView
 
 @end
-{% endcodeblock %}
+```
+
+
+
 
 # 自动布局
 
@@ -96,14 +100,16 @@ collectionView.performBatchUpdates({
 通过以上的讨论，应该比较清楚[UITableViewCell](https://developer.apple.com/reference/uikit/uitableviewcell)已经处理了很多事情，然而，还有更多的事情等着它。
 
 一个表格视图单元格从一个样式开始初始化。看看它做了些什么：
-{% codeblock lang:swift %}
+
+```swift
 public enum UITableViewCellStyle : Int {
     case `default` // Simple cell with text label and optional image view (behavior of UITableViewCell in iPhoneOS 2.x)
     case value1 // Left aligned label on left and right aligned label on right with blue text (Used in Settings)
     case value2 // Right aligned label on left with blue text and left aligned label on right (Used in Phone/Contacts)
     case subtitle // Left aligned label on top and left aligned label on bottom with gray text (Used in iPod).
 }
-{% endcodeblock %}
+
+```
 
 通过样式去设置好的标签和图片视图是符合全有或全无原则。比如说，你使用了一个文本框的表格视图单元格([UITalbeViewCell](https://developer.apple.com/reference/uikit/uitableviewcell))，但是又自行添加了第二个标签，你大部分的情况下都会出现布局的问题。所以你应该在子类化一个表格视图单元格的时候把默认的API也带进去，尽管你不需要用到它们。所以当你看看你的API时，你会发现单元格内建的标签和你自己创建的一模一样。你看到了哪个？这很让人困惑。
 
@@ -129,9 +135,9 @@ UITableView 是从单屏幕单类设备iPhone时代开始应用的。但是时�
 瞧瞧Android那边
 Andoird那边也是类似的情况。自从第一个版本面世后，Android的框架包含了一个类似UITableView那样展示项目的ListView。伴随着Android 5.0 Lollipop在2014的发布，Goole公布了一个继任者，RecyclerView。 RecyclerView被封装在Android Support Library里，说明了它可以被所有版本的Android使用，包括2010年发布的Android2.1。RecyclerView同时代替了其他基础视图，像GridView和其他的布局视图。（像staggered grid等等）。
 Google明确了逐渐抛弃ListVIew，可以看看文档中的第一句话
-{% codeblock lang:swift %}
-The RecyclerView widget is a more advanced and flexible version of ListView.
-{% endcodeblock %}
+
+
+
 因为一些历史遗留的功能没有默认的实现，都需要开发者写一些模版类来迁徙他们旧的代码，总的来说，RecyclerView提供了更好的性能和灵活性，是非常值得一试的。
 
 # 总结

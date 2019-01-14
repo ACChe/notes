@@ -30,93 +30,115 @@
 
   我起了个名字 NSTableViewSectionDataSource：
 
-  {% codeblock lang:swift %}
-  protocol NSTableViewSectionDataSource: NSTableViewDataSource {  
+ 
+
+```swift
+protocol NSTableViewSectionDataSource: NSTableViewDataSource {  
     func numberOfSectionsInTableView(tableView: NSTableView) -> Int
     func tableView(tableView: NSTableView, numberOfRowsInSection section: Int) -> Int
     func tableView(tableView: NSTableView, sectionForRow row: Int) -> (section: Int, row: Int)
   }
-  {% endcodeblock %}
+```
+
+
 
 # SectionForRow
-    tableView(tableView: NSTableView, sectionForRow row: Int) 的实现是负责把无分组的row表现未分组的结构（row的分组）。
-    {% codeblock lang:swift %}
-    func tableView(tableView: NSTableView, sectionForRow row: Int) -> (section: Int, row: Int) { ... }
-    {% endcodeblock %}
-    
-    针对指定输入row的索引，它返回分组里沿着row索引排下来的的section索引。
-    ![view](http://blog.krzyzanowskim.com/content/images/2015/05/sections.gif)
-    
-    给定了4个分组，纯表格里第5行就是分组3里的第1行，索引值是（section：2， row： 0）
+tableView(tableView: NSTableView, sectionForRow row: Int) 的实现是负责把无分组的row表现未分组的结构（row的分组）。
+
+```swift
+func tableView(tableView: NSTableView, sectionForRow row: Int) -> (section: Int, row: Int) { ... }
+
+
+```
+
+
+针对指定输入row的索引，它返回分组里沿着row索引排下来的的section索引。
+![view](http://blog.krzyzanowskim.com/content/images/2015/05/sections.gif)
+
+给定了4个分组，纯表格里第5行就是分组3里的第1行，索引值是（section：2， row： 0）
 
 # 难点
 
   难点是计算但是你不想计算。好吧，我来。我的方法是通过sectionForRow(row, counts)里的row索引，和每一个分组里row的总和，以及提供分组号：
 
-  {% codeblock lang:swift %}
-  private func sectionForRow(row: Int, counts: [Int]) -> (section: Int?, row: Int?) {  
+```swift
+private func sectionForRow(row: Int, counts: [Int]) -> (section: Int?, row: Int?) {  
     let total = reduce(counts, 0, +)
 
-    var c = counts[0]
-    for section in 0..<counts.count {
-        if (section > 0) {
-            c = c + counts[section]
-        }
-        if (row >= c - counts[section]) && row < c {
-            return (section: section, row: row - (c - counts[section]))
-        }
+var c = counts[0]
+for section in 0..<counts.count {
+    if (section > 0) {
+        c = c + counts[section]
     }
-    
-    return (section: nil, row: nil)
-  }
-  {% endcodeblock %}
+    if (row >= c - counts[section]) && row < c {
+        return (section: section, row: row - (c - counts[section]))
+    }
+}
+
+return (section: nil, row: nil)
+
+}
+```
 
   那个counts是可用分组的数量。一般这样用：
-  {% codeblock lang:swift %}
-  let (section, sectionRow) = sectionForRow(row, counts: [2,3,5]) 
-  {% endcodeblock %}
+
+```swift
+let (section, sectionRow) = sectionForRow(row, counts: [2,3,5]) 
+```
+
+  
 
   我会用这个方法去实现剩下的协议里定义的方法：NSTableViewDelegate, NSTableViewDataSource 和 NSTableViewSectionDataSource.
 
   NSTableViewSectionDataSource协议里最重要的方法和使用最普遍的是(tableView: NSTableView, sectionForRow row: Int) -> (section: Int, row: Int). 以下是我的实现方式：
 
-  {% codeblock lang:swift %}
-  func tableView(tableView: NSTableView, sectionForRow row: Int) -> (section: Int, row: Int) {  
+  
+
+```swift
+func tableView(tableView: NSTableView, sectionForRow row: Int) -> (section: Int, row: Int) {  
     if let dataSource = tableView.dataSource() as? NSTableViewSectionDataSource {
         let numberOfSections = dataSource.numberOfSectionsInTableView(tableView)
         var counts = [Int](count: numberOfSections, repeatedValue: 0)
 
-        for section in 0..<numberOfSections {
-            counts[section] = dataSource.tableView(tableView, numberOfRowsInSection: section)
-        }
-    
-        let result = self.sectionForRow(row, counts: counts)
-        return (section: result.section ?? 0, row: result.row ?? 0)
+    for section in 0..<numberOfSections {
+        counts[section] = dataSource.tableView(tableView, numberOfRowsInSection: section)
     }
-    
-    assertionFailure("Invalid datasource")
-    return (section: 0, row: 0)
-  }
-  {% endcodeblock %}
+
+    let result = self.sectionForRow(row, counts: counts)
+    return (section: result.section ?? 0, row: result.row ?? 0)
+}
+
+assertionFailure("Invalid datasource")
+return (section: 0, row: 0)
+
+}
+```
+
+
+  
 
   # 配置
   配置是通过NSTableViewSectionDataSource协议制作的。它是基于众所周知的UIKit里的UITableDataSource协议。那里有代理方法去获得分组号码和指定项。
 
   # 视图
   视图通过我的NSTableView实例的代理（NSTableViewDete）来处理。下面你可以到它能如此轻易的处理问题了：
-  {% codeblock lang:swift %}
-  func tableView(tableView: NSTableView, viewForTableColumn tableColumn: NSTableColumn?, row: Int) -> NSView? {  
+
+ 
+
+```swift
+func tableView(tableView: NSTableView, viewForTableColumn tableColumn: NSTableColumn?, row: Int) -> NSView? {  
     let cellView = tableView.makeViewWithIdentifier("CellView", owner: self) as! NSTableCellView
 
-    if let dataSource = tableView.dataSource() as? NSTableViewSectionDataSource {
-        let (section, sectionRow) = dataSource.tableView(tableView, sectionForRow: row)
-    
-        // here! build view for given section and row index
-    }
-    
-    return cellView
-  }
-  {% endcodeblock %}
+	if let dataSource = tableView.dataSource() as? NSTableViewSectionDataSource {
+    let (section, sectionRow) = dataSource.tableView(tableView, sectionForRow: row)
+
+   // here! build view for given section and row index
+}
+
+return cellView
+
+}
+```
 
   当然，我在这个例子里未提及分组的标题。这不是很难实现。我需要：
   1. 调节每个分组里列的数量，每个加一
