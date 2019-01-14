@@ -1,9 +1,5 @@
----
-title: 函数式思维文章收集
-date: 2015-04-22 0:00:00
-tags: [ "functional", "think" ]
-categories: [ "Funcational" ]
----
+# 函数式思维文章收集
+
 看了三分之一的[Functional Programming in Swift](http://www.objc.io/books/), 还是不能函数式的去思考应用到开发工作中去，于是继续收集研究了一些关于函数式思维的文章来激化函数式思维。
 
 -> [函数式思维和函数式编程](http://www.vaikan.com/programming-thinking-functional-way/)
