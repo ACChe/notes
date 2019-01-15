@@ -10,6 +10,7 @@
 - 翻译: [NSTableView怎么用Section分组](https://github.com/ACChe/notes/blob/master/iOSMac/2018-01-08-Let-s-talk-about-sections-for-NSTableView.md)
 
 - 翻译: [弃用表格视图的可行性](https://github.com/ACChe/notes/blob/master/iOSMac/2017-12-28-the-case-for-deprecating-uitableview.md)
+- 翻译: [Marzipan - 移植iOS到mac](https://github.com/ACChe/notes/blob/master/iOSMac/2019-01-14-porting-ios-apps-to-mac-marzipan-iosmac-uikit-appkit.md)
 
 
 
